@@ -60,8 +60,14 @@ module YARD
       # block.
       # @return [void]
       def start
+        app = self
+        if ENV['YARD_USERNAME'] && ENV['YARD_PASSWORD']
+          app = Rack::Auth::Basic.new(app) do |username, password|
+            [username, password] == [ENV['YARD_USERNAME'], ENV['YARD_PASSWORD']]
+          end
+        end
         server = Rack::Server.new(server_options)
-        server.instance_variable_set("@app", self)
+        server.instance_variable_set("@app", app)
         print_start_message(server)
         server.start
       end
